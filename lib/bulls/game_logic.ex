@@ -99,6 +99,7 @@ defmodule Bulls.GameLogic do
   # Checks whether or not the game has been won
   def has_won(game) do
     secret = game[:secret]
+    IO.puts(secret)
 
     if game[:guesses] == [] do
       false
