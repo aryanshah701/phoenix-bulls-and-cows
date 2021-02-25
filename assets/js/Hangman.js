@@ -3,70 +3,11 @@ import { useState, useEffect } from "react";
 import { isValidGuess } from "./game-functions";
 import { channelJoin, channelMakeGuess, channelResetGame } from "./socket";
 
+import EnterGameScreen from "./EnterGameScreen";
+import Input from "./Input";
+
 import "milligram";
 import "../css/app.scss";
-
-function Input(props) {
-  const [inputString, setInputString] = useState("");
-  let { makeGuess } = props;
-  let { reset } = props;
-
-  //Update input field
-  function updateText(ev) {
-    let currInput = ev.target.value;
-
-    //Not allowing inputs of greater than 4
-    if (currInput.length > 4) {
-      return;
-    }
-
-    setInputString(currInput);
-  }
-
-  return (
-    <div className="container">
-      <div className="row">
-        <div className="column column-20">
-          <p>Input Guess: </p>
-        </div>
-        <div className="column column-40">
-          {/* Input test field logic inspired by hangman class notes */}
-          <input
-            type="text"
-            value={inputString}
-            onChange={updateText}
-            onKeyPress={(ev) => {
-              if (ev.key === "Enter") {
-                makeGuess(inputString);
-                setInputString("");
-              }
-            }}
-          ></input>
-        </div>
-        <div className="column column-20">
-          <button
-            onClick={() => {
-              makeGuess(inputString);
-              setInputString("");
-            }}
-          >
-            Guess
-          </button>
-        </div>
-        <div className="column column-20">
-          <button
-            onClick={() => {
-              reset();
-              setInputString("");
-            }}
-          >
-            Reset
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function Header() {
   return (
@@ -197,15 +138,29 @@ function Rules() {
 }
 
 function App() {
-  const [state, setState] = useState({
+  let [state, setState] = useState({
     guesses: [],
     results: [],
     won: false,
+    gameStarted: false,
+    gameName: "",
   });
 
+  const gameStarted = state.gameStarted;
+
+  function setGameStarted(updatedGameStarted, gameName) {
+    setState({
+      ...state,
+      gameStarted: updatedGameStarted,
+      gameName: gameName,
+    });
+  }
+
   useEffect(() => {
-    channelJoin(setState);
-  });
+    if (gameStarted) {
+      channelJoin(setState, state.gameName);
+    }
+  }, [state.gameStarted]);
 
   //Function to handle making a guess
   function makeGuess(guess) {
@@ -222,6 +177,24 @@ function App() {
   function reset() {
     //Reset the game
     channelResetGame();
+  }
+
+  //Function to handle resetting the game visually
+  function visualReset() {
+    setState({
+      ...state,
+    });
+  }
+
+  //EnterGameScreen if game hasn't started yet
+  if (!gameStarted) {
+    return (
+      <EnterGameScreen
+        setGameStarted={setGameStarted}
+        visualReset={visualReset}
+        setState={setState}
+      />
+    );
   }
 
   //Game Won
@@ -251,7 +224,7 @@ function App() {
             <Rules />
           </div>
           <div className="column column-70">
-            <Input makeGuess={makeGuess} reset={reset} />
+            <Input makeGuess={makeGuess} reset={reset} setState={setState} setGameStarted={setGameStarted} />
             <GuessTable results={state.results} guesses={state.guesses} />
           </div>
         </div>

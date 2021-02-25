@@ -11,7 +11,14 @@ defmodule Bulls.BackupAgent do
   end
 
   def get_backup(key) do
-    Agent.get(__MODULE__, fn backup -> Map.get(backup, key) end)
+    Agent.get(__MODULE__, fn backup -> 
+      IO.puts("From Agent")
+      IO.puts(key)
+      game = Map.get(backup, key)
+      IO.puts(game[:secret])
+      IO.inspect(game[:guesses])
+      Map.get(backup, key) 
+    end)
   end
 
 end

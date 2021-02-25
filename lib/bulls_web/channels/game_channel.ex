@@ -13,6 +13,12 @@ defmodule BullsWeb.GameChannel do
     if authorized?(payload) do
       # Create a new game(or load from backup if exists)
       game = BackupAgent.get_backup(id) || GameLogic.create_new_game()
+
+      IO.puts('From backup')
+      IO.puts(game[:secret])
+
+      IO.puts('Channel name')
+      IO.puts(id)
       
       # Update socket to hold that new game
       socket = assign(socket, :game, game)

@@ -35,20 +35,6 @@
   margin: -1rem 0 2rem;
 }
 
-h1, h4, h6 {
-  text-align: center;
-  margin: 3%;
-}
-
-.container {
-  max-width: 250.0rem;
-  padding: 1%
-}
-
-.center {
-  text-align: center;
-}
-
 #new-game {
   width: 10%;
   display: block;
@@ -61,6 +47,38 @@ h1, h4, h6 {
   margin: 5% auto;
 }
 
+#enter-game-screen {
+  max-width: 50rem;
+  text-align: center;
+}
+
+html {
+  margin: 2%;
+}
+
+h1, h4, h6 {
+  text-align: center;
+  margin: 3%;
+}
+
+.container {
+  max-width: 250.0rem;
+  padding: 1%
+}
+
+.container-large {
+  max-width: 350rem;
+  padding: 1%
+}
+
+.center {
+  text-align: center;
+}
+
 .rules {
   font-weight: normal;
+}
+
+.margin {
+  margin-left: 1%;
 }
