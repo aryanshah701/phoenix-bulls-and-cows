@@ -1,34 +1,57 @@
-import React from 'react';
-import { channelJoin } from './socket';
-import { useState } from 'react'
+import React from "react";
+import { useState } from "react";
 
-import 'milligram';
-import '../css/app.scss';
+import "milligram";
+import "../css/app.scss";
 
+// Initial game screen component
 function EnterGameScreen(props) {
-  const [input, setInput] = useState('');
-  const { setGameStarted, visualReset, setState } = props;
+  // State to control input
+  const [state, setState] = useState({
+    gameName: "",
+    userName: "",
+  });
+  const input = state.gameName;
+  const userName = state.userName;
 
-  //Update input field
+  const { setGameJoined } = props;
+
+  //Update gameName field
   function updateText(ev) {
     let currInput = ev.target.value;
-    setInput(currInput);
+    setState({
+      ...state,
+      gameName: currInput,
+    });
+  }
+
+  //Update userName field
+  function updateUserText(ev) {
+    let currInput = ev.target.value;
+    setState({
+      ...state,
+      userName: currInput,
+    });
   }
 
   //Start game
-  function startGame() {
-    let gameName = input;
+  function joinGame() {
+    let gameName = state.gameName;
+    let userName = state.userName;
 
     // Empty gameName not allowed
-    if (gameName == "") {
+    if (gameName == "" || userName == "") {
       return;
     }
 
-    // Clear the input field
-    setInput("");
+    // Join the game
+    setGameJoined(gameName, userName);
 
-    // Start the game
-    setGameStarted(true, gameName);
+    // Clear the input field
+    setState({
+      gameName: "",
+      userName: "",
+    });
   }
 
   return (
@@ -40,17 +63,29 @@ function EnterGameScreen(props) {
       </div>
       <div className="row">
         <div className="column">
-          <input type="text"    
+          <input
             type="text"
             value={input}
+            placeholder="Game Name"
             onChange={updateText}
             onKeyPress={(ev) => {
               if (ev.key === "Enter") {
-                startGame();
+                joinGame();
               }
             }}
           ></input>
-          <button onClick={() => startGame()}>Start Game</button>
+          <input
+            type="text"
+            value={userName}
+            placeholder="User Name"
+            onChange={updateUserText}
+            onKeyPress={(ev) => {
+              if (ev.key === "Enter") {
+                joinGame();
+              }
+            }}
+          ></input>
+          <button onClick={updateUserText}>Join Game</button>
         </div>
       </div>
     </div>

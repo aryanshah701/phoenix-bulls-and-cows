@@ -14,8 +14,10 @@ let gameState = {
   results: [],
   guesses: [],
   won: false,
-  gameStarted: true,
+  gameStarted: false,
+  gameJoined: true,
   gameName: "",
+  userName: "",
 };
 
 let callback = null;
@@ -33,7 +35,7 @@ function updateGame(newGame) {
     guesses: newGame.guesses,
     won: newGame.won,
   };
-
+  console.log("Channel username: " + gameState.userName);
   if (callback) {
     callback(gameState);
   }
@@ -41,6 +43,7 @@ function updateGame(newGame) {
 
 // Function to call when intially starting game
 export function channelJoin(setState, gameName) {
+  console.log("Joining channel game:" + gameName);
   callback = setState;
 
   // Create new channel with game name
@@ -60,13 +63,60 @@ export function channelJoin(setState, gameName) {
     updateGame(view_game);
   });
 
-  // Update state with gameName
+  // Update state with gameName and joined = true
   gameState = {
     ...gameState,
     gameName: gameName,
+    gameJoined: true,
   };
 
   callback(gameState);
+}
+
+// Function to login to a game
+export function channelLogin(username) {
+  console.log("Logging in user " + username);
+  // Update state with userName
+  gameState = {
+    ...gameState,
+    userName: username,
+  };
+
+  channel
+    .push("login", { name: username })
+    .receive("ok", updateGame)
+    .receive("error", (resp) => {
+      console.log("Unable to login", resp);
+    });
+}
+
+// Updates the game state to start the game
+export function channelStartGame() {
+  gameState = {
+    ...gameState,
+    gameStarted: true,
+  };
+
+  if (callback) {
+    callback(gameState);
+  }
+}
+
+// Leaves the game by resetting game state
+export function channelLeaveGame() {
+  gameState = {
+    results: [],
+    guesses: [],
+    won: false,
+    gameStarted: false,
+    gameJoined: false,
+    gameName: "",
+    userName: "",
+  };
+
+  if (callback) {
+    callback(gameState);
+  }
 }
 
 // Function to make a guess
@@ -76,7 +126,7 @@ export function channelMakeGuess(guess) {
     .push("guess", guess)
     .receive("ok", updateGame)
     .receive("error", (resp) => {
-      console.log("Unable to push", resp);
+      console.log("Unable to guess", resp);
     });
 }
 

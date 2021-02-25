@@ -1,112 +1,25 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import { isValidGuess } from "./game-functions";
-import { channelJoin, channelMakeGuess, channelResetGame } from "./socket";
+import {
+  channelJoin,
+  channelLogin,
+  channelMakeGuess,
+  channelResetGame,
+  channelStartGame,
+  channelLeaveGame,
+} from "./socket";
 
 import EnterGameScreen from "./EnterGameScreen";
 import Input from "./Input";
+import GuessTable from "./GuessTable";
+import Lobby from "./Lobby";
+import GameOver from "./GameOver";
 
 import "milligram";
 import "../css/app.scss";
 
-function Header() {
-  return (
-    <div className="container">
-      <div className="row">
-        <div className="column column-10 center">#</div>
-        <div className="column column-45 center">Guess</div>
-        <div className="column column-45 center">Result</div>
-      </div>
-    </div>
-  );
-}
-
-function Guess(props) {
-  let { idx, guess, result } = props;
-
-  return (
-    <div className="container">
-      <div className="row">
-        <div className="column column-10 center">{idx}</div>
-        <div className="column column-45 center">{guess}</div>
-        <div className="column column-45 center">{result}</div>
-      </div>
-    </div>
-  );
-}
-
-function GuessTable(props) {
-  let { results, guesses } = props;
-
-  return (
-    <div className="container">
-      <Header />
-      <div className="row">
-        <div className="column">
-          <Guess idx={1} guess={guesses[0]} result={results[0]} />
-        </div>
-      </div>
-      <div className="row">
-        <div className="column">
-          <Guess idx={2} guess={guesses[1]} result={results[1]} />
-        </div>
-      </div>
-      <div className="row">
-        <div className="column">
-          <Guess idx={3} guess={guesses[2]} result={results[2]} />
-        </div>
-      </div>
-      <div className="row">
-        <div className="column">
-          <Guess idx={4} guess={guesses[3]} result={results[3]} />
-        </div>
-      </div>
-      <div className="row">
-        <div className="column">
-          <Guess idx={5} guess={guesses[4]} result={results[4]} />
-        </div>
-      </div>
-      <div className="row">
-        <div className="column">
-          <Guess idx={6} guess={guesses[5]} result={results[5]} />
-        </div>
-      </div>
-      <div className="row">
-        <div className="column">
-          <Guess idx={7} guess={guesses[6]} result={results[6]} />
-        </div>
-      </div>
-      <div className="row">
-        <div className="column">
-          <Guess idx={8} guess={guesses[7]} result={results[7]} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function GameOver(props) {
-  let { reset } = props;
-  let { won } = props;
-  let message = "";
-
-  if (won) {
-    message = "You Won!";
-  } else {
-    message = "Sorry, you lost!";
-  }
-
-  return (
-    <div>
-      <h1>Bulls and Cows</h1>
-      <h4>{message}</h4>
-      <button id="new-game" onClick={() => reset()}>
-        New Game
-      </button>
-    </div>
-  );
-}
-
+// Component to render the rules section of the game
 function Rules() {
   return (
     <div className="container rules">
@@ -137,30 +50,57 @@ function Rules() {
   );
 }
 
+// The Parent component
 function App() {
   let [state, setState] = useState({
     guesses: [],
     results: [],
     won: false,
     gameStarted: false,
+    gameJoined: false,
     gameName: "",
+    userName: "",
   });
 
   const gameStarted = state.gameStarted;
+  const gameJoined = state.gameJoined;
 
-  function setGameStarted(updatedGameStarted, gameName) {
-    setState({
-      ...state,
-      gameStarted: updatedGameStarted,
-      gameName: gameName,
-    });
-  }
-
+  // Join channel when game name changes
   useEffect(() => {
-    if (gameStarted) {
+    if (gameJoined) {
       channelJoin(setState, state.gameName);
     }
   }, [state.gameName]);
+
+  // Login user when user name changes
+  useEffect(() => {
+    if (state.userName != "") {
+      channelLogin(state.userName);
+    }
+  }, [state.userName]);
+
+  // Function to join a game
+  function setGameJoined(gameName, userName) {
+    console.log("Joining game " + gameName);
+
+    setState({
+      ...state,
+      gameJoined: true,
+      gameName: gameName,
+      userName: userName,
+    });
+  }
+
+  // Function to leave a game
+  function leaveGame() {
+    channelLeaveGame();
+  }
+
+  // Function to start a game
+  function setGameStarted(updatedGameStarted) {
+    console.log("Starting game...");
+    channelStartGame();
+  }
 
   //Function to handle making a guess
   function makeGuess(guess) {
@@ -179,22 +119,14 @@ function App() {
     channelResetGame();
   }
 
-  //Function to handle resetting the game visually
-  function visualReset() {
-    setState({
-      ...state,
-    });
+  //EnterGameScreen if game hasn't started yet
+  if (!gameJoined) {
+    return <EnterGameScreen setGameJoined={setGameJoined} />;
   }
 
-  //EnterGameScreen if game hasn't started yet
-  if (!gameStarted) {
-    return (
-      <EnterGameScreen
-        setGameStarted={setGameStarted}
-        visualReset={visualReset}
-        setState={setState}
-      />
-    );
+  //LobbyGameScreen if game has been joined but not yet started
+  if (state.gameJoined && !state.gameStarted) {
+    return <Lobby setGameStarted={setGameStarted} />;
   }
 
   //Game Won
@@ -233,7 +165,7 @@ function App() {
               makeGuess={makeGuess}
               reset={reset}
               setState={setState}
-              setGameStarted={setGameStarted}
+              leaveGame={leaveGame}
             />
             <GuessTable results={state.results} guesses={state.guesses} />
           </div>

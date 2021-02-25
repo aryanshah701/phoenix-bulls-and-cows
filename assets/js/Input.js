@@ -6,7 +6,7 @@ import "../css/app.scss";
 
 function Input(props) {
   const [inputString, setInputString] = useState("");
-  let { makeGuess, reset, setGameStarted, visualReset } = props;
+  let { makeGuess, reset, leaveGame } = props;
 
   // Update input field
   function updateText(ev) {
@@ -18,12 +18,6 @@ function Input(props) {
     }
 
     setInputString(currInput);
-  }
-
-  // Leave game
-  function leaveGame() {
-    // Set game started to false
-    setGameStarted(false);
   }
 
   return (
@@ -67,9 +61,7 @@ function Input(props) {
           </button>
         </div>
         <div className="column column-10">
-          <button onClick={() => leaveGame()}>
-            Leave
-          </button>
+          <button onClick={leaveGame}>Leave</button>
         </div>
       </div>
     </div>

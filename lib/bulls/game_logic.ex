@@ -12,6 +12,9 @@ defmodule Bulls.GameLogic do
     %{
       secret: compute_random_secret(),
       guesses: [],
+      started: false,
+      users: [],
+      observers: MapSet.new(),
     }
   end
 
@@ -25,24 +28,95 @@ defmodule Bulls.GameLogic do
     random_nums |> Enum.join("")
   end
 
-  # Adds a guess onto the guess list
-  def guess(game, guess) do
+  # Adds a user onto the user list
+  def add_user(game, user) do
+    # Make sure the user doesn't already exist
+    if !user_exists(game[:users], user) do
+      %{
+        secret: game[:secret],
+        guesses: game[:guesses],
+        started: false,
+        users: [[user, false], game[:users]],
+        observers: game[:observers],
+      }
+    else
+    # Else just return the game unchanged
+      game
+    end
+  end
+
+  # Checks if a user exists in the given list of users
+  def user_exists(users, username) do
+    Enum.any?(users, fn (user) -> List.first(user) == username end)
+  end
+
+  # Make a given user ready
+  def ready_user(game, username) do
+    # Update user's ready value to true
+    updated_users = Enum.map(game[:users], 
+      fn (user) -> 
+        if List.first(user) == username do
+          [username, true]
+        else
+          user
+        end
+      end)
+
     %{
       secret: game[:secret],
-      guesses: game[:guesses] ++ [guess],
+      guesses: game[:guesses],
+      started: false,
+      users: updated_users,
+      observers: game[:observers],
     }
+  end
+
+  # Add observer onto the observer list
+  def add_observer(game, observer) do
+    %{
+      secret: game[:secret],
+      guesses: game[:guesses],
+      started: false,
+      users: game[:users],
+      observers: MapSet.put(game[:observers], observer),
+    }
+  end
+
+  # Check if a game is ready to play
+  def is_game_ready(game) do
+    Enum.all?(game[:users], fn (user) -> List.last(user) end)
+  end
+
+  # Adds a guess onto the guess list
+  def guess(game, guess, user) do
+    # Make sure the user is not an observer
+    if !Enum.member?(game[:observers], user) do 
+      %{
+        secret: game[:secret],
+        guesses: [[user, guess] | game[:guesses]],
+        started: false,
+        users: game[:users],
+        observers: game[:observers],
+      }
+    else
+      game
+    end
+
   end
 
   # Provides the view version of the game
   def get_view_version(game) do
     # Compute the results for each guess
     results = Enum.map(game[:guesses], fn guess -> 
-      get_guess_result(game, guess) end)
-     
+      get_guess_result(game, List.last(guess)) end)
+      
     %{
       results: results,
       guesses: game[:guesses],
       won: has_won(game),
+      started: game[:started],
+      observers: MapSet.to_list(game[:observers]),
+      users: game[:users]
     }
   end
 
@@ -104,7 +178,10 @@ defmodule Bulls.GameLogic do
     if game[:guesses] == [] do
       false
     else
-      last_guess = List.last(game[:guesses])
+      last_guess = game[:guesses]
+        |> List.first
+        |> List.last
+      IO.puts(last_guess)
       secret == last_guess
     end
   end

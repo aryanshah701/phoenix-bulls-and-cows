@@ -41,9 +41,15 @@ defmodule Bulls.GameServer do
     )
   end
 
+  # Function to add a user
+
+  # Function to update user ready status
+
+  # Function to add observer
+
   # Function to make a guess
-  def make_guess(game_name, guess) do
-    GenServer.call(reg(game_name), {:guess, game_name, guess})
+  def make_guess(game_name, guess, user) do
+    GenServer.call(reg(game_name), {:guess, game_name, user, guess})
   end
 
   # Function to reset a game
@@ -66,9 +72,9 @@ defmodule Bulls.GameServer do
   end
 
   @impl true
-  def handle_call({:guess, game_name, guess}, _from, game) do
+  def handle_call({:guess, game_name, user, guess}, _from, game) do
     # Make a guess
-    game = GameLogic.guess(game, guess)
+    game = GameLogic.guess(game, guess, user)
 
     # Update backup agent
     BackupAgent.update_backup(game_name, game)
