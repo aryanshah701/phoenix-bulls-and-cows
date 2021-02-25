@@ -5,27 +5,24 @@ defmodule BullsWeb.GameChannel do
   # Use game logic module
   alias Bulls.GameLogic
 
-  # Use the backup agent
-  alias Bulls.BackupAgent
+  # Use the GenServer
+  alias Bulls.GameServer
 
   @impl true
-  def join("game:" <> id, payload, socket) do
+  def join("game:" <> game_name, payload, socket) do
     if authorized?(payload) do
-      # Create a new game(or load from backup if exists)
-      game = BackupAgent.get_backup(id) || GameLogic.create_new_game()
-
-      IO.puts('From backup')
-      IO.puts(game[:secret])
+      # Create a new game through GenServer
+      GameServer.start_game(game_name)
+      game = GameServer.get_game(game_name)
 
       IO.puts('Channel name')
-      IO.puts(id)
-      
-      # Update socket to hold that new game
-      socket = assign(socket, :game, game)
-      socket = assign(socket, :id, id)
+      IO.puts(game_name)
 
-      # Populate backup agent
-      BackupAgent.update_backup(id, game)
+      IO.puts('Secret')
+      IO.puts(game[:secret])
+      
+      # Update socket to hold the game name
+      socket = assign(socket, :game, game_name)
 
       # Create view version of game(results, and guesses)
       view_game = GameLogic.get_view_version(game)
@@ -39,16 +36,17 @@ defmodule BullsWeb.GameChannel do
   # Handle guess request
   @impl true
   def handle_in("guess", %{"guess" => guess}, socket) do
-    # Update game state and socket
-    game = GameLogic.guess(socket.assigns[:game], guess)
-    socket = assign(socket, :game, game)
-
-    # Update backup agent
-    id = socket.assigns[:id]
-    BackupAgent.update_backup(id, game)
+    # Update game state through GenServer
+    game_name = socket.assigns[:game]
+    GameServer.make_guess(game_name, guess)
+    game = GameServer.get_game(game_name)
 
     # Update view game for reply
     view_game = GameLogic.get_view_version(game)
+
+    # Broadcast state update to all players connected to this channel
+    IO.puts(socket.topic)
+    broadcast_from(socket, "view", view_game)
 
     {:reply, {:ok, view_game}, socket}
   end
@@ -56,20 +54,17 @@ defmodule BullsWeb.GameChannel do
   # Handle reset request
   @impl true
   def handle_in("reset", _, socket) do
-    # Create a new game and new view_game to respond with
-    # Create a new game
-    game = GameLogic.create_new_game()
-    
-    # Update socket to hold that new game
-    socket = assign(socket, :game, game)
-
-    # Reset the backup agent game too
-    id = socket.assigns[:id]
-    BackupAgent.update_backup(id, game)
+    # Reset game through GenServer
+    game_name = socket.assigns[:game]
+    GameServer.reset(game_name)
+    game = GameServer.get_game(game_name)
 
     # Create view version of game(results, and guesses)
     view_game = GameLogic.get_view_version(game)
 
+    # Broadcast state update to all players connected to this channel
+    IO.puts(socket.topic)
+    broadcast_from(socket, "view", view_game)
     {:reply, {:ok, view_game}, socket}
   end
 

@@ -160,7 +160,7 @@ function App() {
     if (gameStarted) {
       channelJoin(setState, state.gameName);
     }
-  }, [state.gameStarted]);
+  }, [state.gameName]);
 
   //Function to handle making a guess
   function makeGuess(guess) {
@@ -220,11 +220,21 @@ function App() {
       <h1>Bulls and Cows</h1>
       <div className="container">
         <div className="row">
+          <div className="column">
+            <h2>Game: {state.gameName}</h2>
+          </div>
+        </div>
+        <div className="row">
           <div className="column column-30">
             <Rules />
           </div>
           <div className="column column-70">
-            <Input makeGuess={makeGuess} reset={reset} setState={setState} setGameStarted={setGameStarted} />
+            <Input
+              makeGuess={makeGuess}
+              reset={reset}
+              setState={setState}
+              setGameStarted={setGameStarted}
+            />
             <GuessTable results={state.results} guesses={state.guesses} />
           </div>
         </div>

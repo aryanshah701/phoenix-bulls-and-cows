@@ -53,16 +53,25 @@ export function channelJoin(setState, gameName) {
     .receive("error", (resp) => {
       console.log("Unable to join", resp);
     });
-  
-  // Update state with gameName 
-  callback({
+
+  // Listen view view update broadcasts(Taken from Nat Tuck notes, 0219 socket.js)
+  channel.on("view", (view_game) => {
+    console.log("Broadcast received");
+    updateGame(view_game);
+  });
+
+  // Update state with gameName
+  gameState = {
     ...gameState,
     gameName: gameName,
-  });
+  };
+
+  callback(gameState);
 }
 
 // Function to make a guess
 export function channelMakeGuess(guess) {
+  console.log(guess);
   channel
     .push("guess", guess)
     .receive("ok", updateGame)
