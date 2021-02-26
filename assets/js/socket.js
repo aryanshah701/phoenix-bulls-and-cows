@@ -102,6 +102,16 @@ export function channelStartGame() {
   }
 }
 
+// Adds a user to the game
+
+// Updates a user's ready status in the game
+
+// Provides the users in the game
+
+// Adds an observer to the game
+
+// Provides the observers in the game
+
 // Leaves the game by resetting game state
 export function channelLeaveGame() {
   gameState = {

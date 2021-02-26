@@ -29,7 +29,7 @@ defmodule Bulls.GameLogic do
   end
 
   # Adds a user onto the user list
-  def add_user(game, user) do
+  def add_player(game, user) do
     # Make sure the user doesn't already exist
     if !user_exists(game[:users], user) do
       %{
@@ -50,22 +50,23 @@ defmodule Bulls.GameLogic do
     Enum.any?(users, fn (user) -> List.first(user) == username end)
   end
 
-  # Make a given user ready
-  def ready_user(game, username) do
-    # Update user's ready value to true
+  # Update a given user's status
+  def update_status(game, username, status) do
+    # Update user's ready value to status
     updated_users = Enum.map(game[:users], 
       fn (user) -> 
         if List.first(user) == username do
-          [username, true]
+          [username, status]
         else
           user
         end
       end)
 
+    # Check if the game can be started with updated user status
     %{
       secret: game[:secret],
       guesses: game[:guesses],
-      started: false,
+      started: is_game_ready(updated_users),
       users: updated_users,
       observers: game[:observers],
     }
@@ -83,8 +84,8 @@ defmodule Bulls.GameLogic do
   end
 
   # Check if a game is ready to play
-  def is_game_ready(game) do
-    Enum.all?(game[:users], fn (user) -> List.last(user) end)
+  def is_game_ready(users) do
+    Enum.all?(users, fn (user) -> List.last(user) end)
   end
 
   # Adds a guess onto the guess list
@@ -114,9 +115,6 @@ defmodule Bulls.GameLogic do
       results: results,
       guesses: game[:guesses],
       won: has_won(game),
-      started: game[:started],
-      observers: MapSet.to_list(game[:observers]),
-      users: game[:users]
     }
   end
 

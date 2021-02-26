@@ -41,11 +41,20 @@ defmodule Bulls.GameServer do
     )
   end
 
-  # Function to add a user
-
-  # Function to update user ready status
+  # Function to add a player
+  def add_player(game_name, user) do
+    GenServer.call(reg(game_name), {:add_player, game_name, user})
+  end
 
   # Function to add observer
+  def add_observer(game_name, user) do
+    GenServer.call(reg(game_name), {:add_observer, game_name, user})
+  end
+
+  # Function to update player ready status
+  def update_status(game_name, user, status) do
+    GenServer.call(reg(game_name), {:update_ready, game_name, user, status})
+  end
 
   # Function to make a guess
   def make_guess(game_name, guess, user) do
@@ -87,6 +96,42 @@ defmodule Bulls.GameServer do
   def handle_call({:reset, game_name}, _from, _game) do
     # Reset the game
     game = GameLogic.create_new_game()
+
+    # Update backup agent
+    BackupAgent.update_backup(game_name, game)
+
+    # Respond with new game
+    {:reply, game, game}
+  end
+
+  @impl true
+  def handle_call({:add_player, game_name, user}, _from, game) do
+    # Add the player onto the game
+    game = GameLogic.add_player(game, user)
+
+    # Update backup agent
+    BackupAgent.update_backup(game_name, game)
+
+    # Respond with new game
+    {:reply, game, game}
+  end
+
+  @impl true
+  def handle_call({:add_observer, game_name, user}, _from, game) do
+    # Add the player onto the game
+    game = GameLogic.add_observer(game, user)
+
+    # Update backup agent
+    BackupAgent.update_backup(game_name, game)
+
+    # Respond with new game
+    {:reply, game, game}
+  end
+
+  @impl true
+  def handle_call({:update_status, game_name, user, status}, _from, game) do
+    # Update the player's status
+    game = GameLogic.update_status(game, user, status)
 
     # Update backup agent
     BackupAgent.update_backup(game_name, game)
