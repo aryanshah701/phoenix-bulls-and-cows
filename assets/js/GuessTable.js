@@ -8,9 +8,9 @@ function Header() {
   return (
     <div className="container">
       <div className="row">
-        <div className="column column-10 center">Name</div>
-        <div className="column column-45 center">Guess</div>
-        <div className="column column-45 center">Result</div>
+        <div className="column column-40 center">Name</div>
+        <div className="column column-30 center">Guess</div>
+        <div className="column column-30 center">Result</div>
       </div>
     </div>
   );

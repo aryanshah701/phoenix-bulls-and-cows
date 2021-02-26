@@ -18,6 +18,8 @@ let gameState = {
   gameJoined: true,
   gameName: "",
   userName: "",
+  players: [],
+  observers: [],
 };
 
 let callback = null;
@@ -34,6 +36,9 @@ function updateGame(newGame) {
     results: newGame.results,
     guesses: newGame.guesses,
     won: newGame.won,
+    players: newGame.users,
+    observers: newGame.observers,
+    gameStarted: newGame.started,
   };
   console.log("Channel username: " + gameState.userName);
   if (callback) {
@@ -82,6 +87,7 @@ export function channelLogin(username) {
     userName: username,
   };
 
+  // Login(adds user as observer by default)
   channel
     .push("login", { name: username })
     .receive("ok", updateGame)
@@ -102,18 +108,46 @@ export function channelStartGame() {
   }
 }
 
-// Adds a user to the game
+// Adds a player to the game
+export function channelAddPlayer(username) {
+  console.log("Adding the player " + username);
+  channel
+    .push("addplayer", {})
+    .receive("ok", updateGame)
+    .receive("error", (resp) => {
+      console.log("Unable to add player", resp);
+    });
+}
 
-// Updates a user's ready status in the game
-
-// Provides the users in the game
+// Updates a player's ready status in the game
+export function channelUpdatePlayerStatus(status) {
+  channel
+    .push("updatestatus", { status: status })
+    .receive("ok", updateGame)
+    .receive("error", (resp) => {
+      console.log("Unable to add update player status", resp);
+    });
+}
 
 // Adds an observer to the game
+export function channelAddObserver(username) {
+  channel
+    .push("addobserver", {})
+    .receive("ok", updateGame)
+    .receive("error", (resp) => {
+      console.log("Unable to add observer", resp);
+    });
+}
 
-// Provides the observers in the game
-
-// Leaves the game by resetting game state
+// Leaves the game
 export function channelLeaveGame() {
+  channel
+    .push("leave", {})
+    .receive("ok", updateGame)
+    .receive("error", (resp) => {
+      console.log("Unable to add observer", resp);
+    });
+
   gameState = {
     results: [],
     guesses: [],
@@ -122,6 +156,8 @@ export function channelLeaveGame() {
     gameJoined: false,
     gameName: "",
     userName: "",
+    players: [],
+    observers: [],
   };
 
   if (callback) {

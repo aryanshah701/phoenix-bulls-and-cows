@@ -32,16 +32,26 @@ defmodule Bulls.GameLogic do
   def add_player(game, user) do
     # Make sure the user doesn't already exist
     if !user_exists(game[:users], user) do
+      # Add user to players and remove from observer
+      updated_users = [[user, false] | game[:users]]
+      updated_users = Enum.filter(updated_users, 
+        fn (user) -> List.flatten(user) != [] end)
+      
+      updated_observers = MapSet.new(Enum.filter(game[:observers], 
+        fn (obs) -> obs != user end))
+
       %{
         secret: game[:secret],
         guesses: game[:guesses],
         started: false,
-        users: [[user, false], game[:users]],
-        observers: game[:observers],
+        users: updated_users,
+        observers: updated_observers,
       }
+
     else
     # Else just return the game unchanged
       game
+
     end
   end
 
@@ -74,12 +84,19 @@ defmodule Bulls.GameLogic do
 
   # Add observer onto the observer list
   def add_observer(game, observer) do
+    # Add to observers, and remove from users
+    updated_observers = MapSet.put(game[:observers], observer)
+    updated_users = Enum.filter(game[:users], 
+      fn (user) -> 
+        List.first(user) != observer 
+      end)
+
     %{
       secret: game[:secret],
       guesses: game[:guesses],
-      started: false,
-      users: game[:users],
-      observers: MapSet.put(game[:observers], observer),
+      started: game[:started],
+      users: updated_users,
+      observers: updated_observers,
     }
   end
 
@@ -95,7 +112,7 @@ defmodule Bulls.GameLogic do
       %{
         secret: game[:secret],
         guesses: [[user, guess] | game[:guesses]],
-        started: false,
+        started: game[:started],
         users: game[:users],
         observers: game[:observers],
       }
@@ -110,11 +127,18 @@ defmodule Bulls.GameLogic do
     # Compute the results for each guess
     results = Enum.map(game[:guesses], fn guess -> 
       get_guess_result(game, List.last(guess)) end)
+
+    # Remove any empty users
+    updated_users = Enum.filter(game[:users], 
+      fn (user) -> List.flatten(user) != [] end)
       
     %{
       results: results,
       guesses: game[:guesses],
       won: has_won(game),
+      users: updated_users,
+      observers: MapSet.to_list(game[:observers]),
+      started: game[:started],
     }
   end
 
@@ -182,6 +206,27 @@ defmodule Bulls.GameLogic do
       IO.puts(last_guess)
       secret == last_guess
     end
+  end
+
+  # Removes a user from the game state
+  def remove_user(game, username) do
+    # Remove from both the observer and user list
+    updated_observers = MapSet.new(Enum.filter(game[:observers], 
+        fn (obs) -> obs != username end))
+
+    updated_users = Enum.filter(game[:users], 
+      fn (user) -> 
+        List.first(user) != username 
+      end)
+    
+    # Return updated game state
+    %{
+      secret: game[:secret],
+      guesses: game[:guesses],
+      started: game[:started],
+      users: updated_users,
+      observers: updated_observers,
+    }
   end
 
 end

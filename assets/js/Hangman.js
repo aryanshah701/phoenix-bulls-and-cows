@@ -1,9 +1,12 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { isValidGuess } from "./game-functions";
+import { isValidGuess, getUserType, isObserver } from "./game-functions";
 import {
   channelJoin,
   channelLogin,
+  channelAddPlayer,
+  channelUpdatePlayerStatus,
+  channelAddObserver,
   channelMakeGuess,
   channelResetGame,
   channelStartGame,
@@ -60,6 +63,8 @@ function App() {
     gameJoined: false,
     gameName: "",
     userName: "",
+    players: [],
+    observers: [],
   });
 
   const gameStarted = state.gameStarted;
@@ -93,6 +98,7 @@ function App() {
 
   // Function to leave a game
   function leaveGame() {
+    console.log("Leaving game...");
     channelLeaveGame();
   }
 
@@ -126,7 +132,18 @@ function App() {
 
   //LobbyGameScreen if game has been joined but not yet started
   if (state.gameJoined && !state.gameStarted) {
-    return <Lobby setGameStarted={setGameStarted} />;
+    return (
+      <Lobby
+        gameName={state.gameName}
+        userName={state.userName}
+        observers={state.observers}
+        players={state.players}
+        setGameStarted={setGameStarted}
+        makePlayer={channelAddPlayer}
+        makeObserver={channelAddObserver}
+        updateStatus={channelUpdatePlayerStatus}
+      />
+    );
   }
 
   //Game Won
@@ -157,6 +174,16 @@ function App() {
           </div>
         </div>
         <div className="row">
+          <div className="column">
+            <h2>User: {state.userName}</h2>
+          </div>
+        </div>
+        <div className="row">
+          <div className="column">
+            <h2>Type: {getUserType(state.userName, state.observers)}</h2>
+          </div>
+        </div>
+        <div className="row">
           <div className="column column-30">
             <Rules />
           </div>
@@ -166,6 +193,7 @@ function App() {
               reset={reset}
               setState={setState}
               leaveGame={leaveGame}
+              isObserver={() => isObserver(state.userName, state.observers)}
             />
             <GuessTable results={state.results} guesses={state.guesses} />
           </div>

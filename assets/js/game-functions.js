@@ -1,24 +1,12 @@
-import { shuffle, difference } from 'lodash';
+import { shuffle, difference } from "lodash";
 
-//Compute a randomised 
-export function computeRandomSecret() {
-  let secret = "";
-  //Array of digits
-  let nums = [0, 1, 2, 3, 4, 5, 6 , 7, 8, 9];
-  let shuffledNums = shuffle(nums);
-
-  for (let i = 0; i < 4; i++) {
-    secret += shuffledNums[i];
-  }
-
-  return secret;
-}
-
+// Are there any characters in the string
 function anyCharacterInString(str) {
   let chars = str.split("");
-  return chars.filter((ch) => ch === '0' || Boolean(parseInt(ch))).length !== 4;
+  return chars.filter((ch) => ch === "0" || Boolean(parseInt(ch))).length !== 4;
 }
 
+// Are there any duplicate characters in the string
 function anyDuplicateCharactersInString(str) {
   let chars = str.split("");
   for (let i = 0; i < chars.length; i++) {
@@ -32,48 +20,17 @@ function anyDuplicateCharactersInString(str) {
   return false;
 }
 
+// Is the given guess valid
 export function isValidGuess(guess) {
   return !anyCharacterInString(guess) && !anyDuplicateCharactersInString(guess);
 }
 
-export function computeResult(secret, guess) {
-  if (!secret || !guess) {
-    return "";
-  }
-
-  let secretChars = secret.split("");
-  let guessChars = guess.split("");
-
-  //Searching for Bulls
-  let bulls = [];
-  for (let i = 0; i < secretChars.length; i++) {
-    if (secretChars[i] === guessChars[i]) {
-      bulls.push(secretChars[i]);
-    }
-  }
-
-  //Searching for Cows
-  let cows = [];
-  for (let i = 0; i < guessChars.length; i++) {
-    for (let j = 0; j < secretChars.length; j++) {
-      if (guessChars[i] === secretChars[j]) {
-        cows.push(guessChars[i]);
-      }
-    }
-  }
-
-  cows = difference(cows, bulls);
-
-  //Returning formatted string
-  let opString = parseInt(cows.length) + "C" + parseInt(bulls.length) + "B";
-  console.log("Cows: " + cows);
-  console.log("Bulls: " + bulls);
-  return opString;
+//Checks if the current user is an observer
+export function isObserver(userName, observers) {
+  return observers.includes(userName);
 }
 
-export function hasWon(state) {
-  let secret = state.secret;
-  let guesses = state.guesses;
-  let lastGuess = guesses[guesses.length - 1];
-  return secret === lastGuess;
+// What type is the given user, player or observer
+export function getUserType(userName, observers) {
+  return isObserver(userName, observers) ? "Observer" : "Player";
 }

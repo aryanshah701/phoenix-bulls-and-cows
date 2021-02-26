@@ -41,10 +41,78 @@ defmodule BullsWeb.GameChannel do
     # Populate socket with the username(replace "")
     socket = assign(socket, :user, username)
 
-    # Respond with view
+    # Add user as an observer
     game_name = socket.assigns[:game]
+    user = socket.assigns[:user]
+    GameServer.add_observer(game_name, user)
     game = GameServer.get_game(game_name)
+
+    # Respond with view
     view_game = GameLogic.get_view_version(game)
+
+    IO.inspect view_game
+
+    {:reply, {:ok, view_game}, socket}
+  end
+
+  # Handle add player request
+  @impl true
+  def handle_in("addplayer", _, socket) do
+    IO.puts("in add player handle in")
+
+    # Update game state through GenServer
+    game_name = socket.assigns[:game]
+    user = socket.assigns[:user]
+    GameServer.add_player(game_name, user)
+    game = GameServer.get_game(game_name)
+
+    # Update view game for reply
+    view_game = GameLogic.get_view_version(game)
+
+    # Broadcast state update to all players connected to this channel
+    broadcast_from(socket, "view", view_game)
+
+    IO.inspect view_game
+
+    {:reply, {:ok, view_game}, socket}
+  end
+
+  # Handle add observer request
+  @impl true
+  def handle_in("addobserver", _, socket) do
+    # Update game state through GenServer
+    game_name = socket.assigns[:game]
+    user = socket.assigns[:user]
+    GameServer.add_observer(game_name, user)
+    game = GameServer.get_game(game_name)
+
+    # Update view game for reply
+    view_game = GameLogic.get_view_version(game)
+
+    IO.inspect view_game
+
+    # Broadcast state update to all players connected to this channel
+    broadcast_from(socket, "view", view_game)
+
+    {:reply, {:ok, view_game}, socket}
+  end
+
+  # Handle update status request
+  @impl true
+  def handle_in("updatestatus", %{"status" => status}, socket) do
+    # Update game state through GenServer
+    game_name = socket.assigns[:game]
+    user = socket.assigns[:user]
+    GameServer.update_status(game_name, user, status)
+    game = GameServer.get_game(game_name)
+
+    # Update view game for reply
+    view_game = GameLogic.get_view_version(game)
+
+    IO.inspect view_game
+
+    # Broadcast state update to all players connected to this channel
+    broadcast_from(socket, "view", view_game)
 
     {:reply, {:ok, view_game}, socket}
   end
@@ -56,6 +124,25 @@ defmodule BullsWeb.GameChannel do
     game_name = socket.assigns[:game]
     user = socket.assigns[:user]
     GameServer.make_guess(game_name, guess, user)
+    game = GameServer.get_game(game_name)
+
+    # Update view game for reply
+    view_game = GameLogic.get_view_version(game)
+
+    # Broadcast state update to all players connected to this channel
+    IO.puts(socket.topic)
+    broadcast_from(socket, "view", view_game)
+
+    {:reply, {:ok, view_game}, socket}
+  end
+
+  # Handle leave request
+  @impl true
+  def handle_in("leave", _, socket) do
+    # Update game state through GenServer
+    game_name = socket.assigns[:game]
+    user = socket.assigns[:user]
+    GameServer.remove_user(game_name, user)
     game = GameServer.get_game(game_name)
 
     # Update view game for reply

@@ -6,7 +6,7 @@ import "../css/app.scss";
 
 function Input(props) {
   const [inputString, setInputString] = useState("");
-  let { makeGuess, reset, leaveGame } = props;
+  let { makeGuess, reset, isObserver, leaveGame } = props;
 
   // Update input field
   function updateText(ev) {
@@ -20,26 +20,33 @@ function Input(props) {
     setInputString(currInput);
   }
 
+  // If the user is an observer, disable the input field
+  let inputField;
+  if (isObserver()) {
+    inputField = <input type="text" disabled></input>;
+  } else {
+    inputField = (
+      <input
+        type="text"
+        value={inputString}
+        onChange={updateText}
+        onKeyPress={(ev) => {
+          if (ev.key === "Enter") {
+            makeGuess(inputString);
+            setInputString("");
+          }
+        }}
+      ></input>
+    );
+  }
+
   return (
     <div className="container container-large">
       <div className="row">
         <div className="column column-20">
           <p>Input Guess: </p>
         </div>
-        <div className="column column-35">
-          {/* Input test field logic inspired by hangman class notes */}
-          <input
-            type="text"
-            value={inputString}
-            onChange={updateText}
-            onKeyPress={(ev) => {
-              if (ev.key === "Enter") {
-                makeGuess(inputString);
-                setInputString("");
-              }
-            }}
-          ></input>
-        </div>
+        <div className="column column-35">{inputField}</div>
         <div className="column column-15">
           <button
             onClick={() => {
