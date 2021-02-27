@@ -24,6 +24,14 @@ let gameState = {
 
 let callback = null;
 
+// Function to see if the user exists in this game
+function userExists(users, observers) {
+  return (
+    users.map((user) => user[0]).includes(gameState.userName) ||
+    observers.includes(gameState.userName)
+  );
+}
+
 // Function to update the game state(from the server)
 function updateGame(newGame) {
   console.log("---------------");
@@ -31,18 +39,23 @@ function updateGame(newGame) {
   console.log("New game guesses: " + newGame.guesses);
   console.log("Won:" + newGame.won);
   console.log("---------------");
-  gameState = {
-    ...gameState,
-    results: newGame.results,
-    guesses: newGame.guesses,
-    won: newGame.won,
-    players: newGame.users,
-    observers: newGame.observers,
-    gameStarted: newGame.started,
-  };
-  console.log("Channel username: " + gameState.userName);
-  if (callback) {
-    callback(gameState);
+
+  // If the user exist in this game
+  if (!newGame.started || userExists(newGame.users, newGame.observers)) {
+    gameState = {
+      ...gameState,
+      results: newGame.results,
+      guesses: newGame.guesses,
+      won: newGame.won,
+      players: newGame.users,
+      observers: newGame.observers,
+      gameStarted: newGame.started,
+    };
+
+    console.log("Channel username: " + gameState.userName);
+    if (callback) {
+      callback(gameState);
+    }
   }
 }
 

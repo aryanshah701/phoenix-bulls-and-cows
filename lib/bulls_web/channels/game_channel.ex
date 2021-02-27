@@ -41,10 +41,18 @@ defmodule BullsWeb.GameChannel do
     # Populate socket with the username(replace "")
     socket = assign(socket, :user, username)
 
-    # Add user as an observer
+    # Add user as an observer if the user wasn't a player already
     game_name = socket.assigns[:game]
     user = socket.assigns[:user]
-    GameServer.add_observer(game_name, user)
+
+    if (!GameLogic.is_player(GameServer.get_game(game_name), user)) do
+      IO.puts("It is a new player")
+      GameServer.add_observer(game_name, user)
+    else
+      IO.puts("It is a not new player")
+    end
+
+    # Get the updated game
     game = GameServer.get_game(game_name)
 
     # Respond with view
@@ -142,7 +150,7 @@ defmodule BullsWeb.GameChannel do
     # Update game state through GenServer
     game_name = socket.assigns[:game]
     user = socket.assigns[:user]
-    GameServer.remove_user(game_name, user)
+    # GameServer.remove_user(game_name, user)
     game = GameServer.get_game(game_name)
 
     # Update view game for reply

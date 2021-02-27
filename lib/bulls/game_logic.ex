@@ -60,6 +60,11 @@ defmodule Bulls.GameLogic do
     Enum.any?(users, fn (user) -> List.first(user) == username end)
   end
 
+  # Checks if a given user is a player
+  def is_player(game, username) do
+    user_exists(game[:users], username)
+  end
+
   # Update a given user's status
   def update_status(game, username, status) do
     # Update user's ready value to status
