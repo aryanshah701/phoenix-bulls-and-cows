@@ -10,11 +10,11 @@ function Lobby(props) {
     userName,
     observers,
     players,
-    setGameStarted,
     makePlayer,
     makeObserver,
     updateStatus,
     scores,
+    leaveLobby,
   } = props;
 
   function statusString(status) {
@@ -80,7 +80,7 @@ function Lobby(props) {
             </div>
             <div className="row">
               <div className="column">
-                <button onClick={setGameStarted}>Start Game</button>
+                <button onClick={leaveLobby}>Leave</button>
               </div>
             </div>
             <div className="row">

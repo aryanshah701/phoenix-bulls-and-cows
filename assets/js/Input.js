@@ -46,8 +46,8 @@ function Input(props) {
         <div className="column column-20">
           <p>Input Guess: </p>
         </div>
-        <div className="column column-35">{inputField}</div>
-        <div className="column column-15">
+        <div className="column column-40">{inputField}</div>
+        <div className="column column-20">
           <button
             onClick={() => {
               makeGuess(inputString);
@@ -57,17 +57,7 @@ function Input(props) {
             Guess
           </button>
         </div>
-        <div className="column column-15">
-          <button
-            onClick={() => {
-              reset();
-              setInputString("");
-            }}
-          >
-            Reset
-          </button>
-        </div>
-        <div className="column column-10">
+        <div className="column column-20">
           <button onClick={leaveGame}>Leave</button>
         </div>
       </div>

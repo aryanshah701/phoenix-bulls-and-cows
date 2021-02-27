@@ -121,7 +121,7 @@ function App() {
     channelMakeGuess({ guess: guess });
   }
 
-  //Function to handle resetting
+  //Function to handle resetting(returning)
   function reset() {
     //Reset the game
     channelResetGame();
@@ -147,6 +147,7 @@ function App() {
         makeObserver={channelAddObserver}
         updateStatus={channelUpdatePlayerStatus}
         scores={state.scores}
+        leaveLobby={leaveGame}
       />
     );
   }
