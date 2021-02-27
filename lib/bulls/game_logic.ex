@@ -8,7 +8,7 @@ defmodule Bulls.GameLogic do
 
   # Creates a new game with a random secret
   def create_new_game() do
-    # Return a map of secret and guesses
+    # Return a map of secret and guesses(and other game state)
     %{
       secret: compute_random_secret(),
       guesses: [],
@@ -82,6 +82,8 @@ defmodule Bulls.GameLogic do
     # Check if the game can be started with updated user status
     # If game can be started, starts the game, and updates scores
     if is_game_ready(updated_users) do 
+      IO.puts "Game Ready: Updating scores"
+      updated_scores = get_updated_scores(game[:scores], updated_users)
       %{
         secret: game[:secret],
         guesses: game[:guesses],
@@ -104,18 +106,18 @@ defmodule Bulls.GameLogic do
   end
 
   # Get updated scores with new players who may have begun playing
-  def get_updated_scores(game) do
+  def get_updated_scores(scores, users) do
     # Get the users that are playing the game and don't have scores
     # And add all these users with a score of 0 to the current score list
-    new_scores = game[:users]
+    new_scores = users
       |> Enum.filter(fn (user) -> List.last(user) end)
-      |> Enum.filter(fn (user) -> !score_member?(game[:scores], List.first(user)) end)
+      |> Enum.filter(fn (user) -> !score_member?(scores, List.first(user)) end)
       |> Enum.map(fn (user) -> [List.first(user), 0] end)
 
     # Join the above list with the current scores
-    IO.puts "SCORES"
-    IO.inspect game[:scores]    
-    game[:scores] ++ new_scores
+    IO.inspect scores
+    IO.inspect new_scores  
+    scores ++ new_scores
   end
 
   # Check if the given user is already has a score
@@ -145,7 +147,8 @@ defmodule Bulls.GameLogic do
 
   # Check if a game is ready to play
   def is_game_ready(users) do
-    Enum.all?(users, fn (user) -> List.last(user) end)
+    users != [] && 
+      Enum.all?(users, fn (user) -> List.last(user) end)
   end
 
   # Adds a guess onto the guess list
@@ -166,6 +169,17 @@ defmodule Bulls.GameLogic do
 
   end
 
+  def update_scores(game, scores) do
+    %{
+        secret: game[:secret],
+        guesses: game[:guesses],
+        started: game[:started],
+        users: game[:users],
+        observers: game[:observers],
+        scores: scores,
+    }
+  end
+
   # Provides the view version of the game
   def get_view_version(game) do
     # Compute the results for each guess
@@ -175,16 +189,47 @@ defmodule Bulls.GameLogic do
     # Remove any empty users
     updated_users = Enum.filter(game[:users], 
       fn (user) -> List.flatten(user) != [] end)
-      
-    %{
-      results: results,
-      guesses: game[:guesses],
-      won: has_won(game),
-      users: updated_users,
-      observers: MapSet.to_list(game[:observers]),
-      started: game[:started],
-      winner: get_winner(game),
-    }
+
+    # If game has been won, update winner and scores
+    if has_won(game) do
+      winner = get_winner(game)
+      updated_scores = update_winners_score(game[:scores], winner)
+      %{
+        results: results,
+        guesses: game[:guesses],
+        won: true,
+        users: updated_users,
+        observers: MapSet.to_list(game[:observers]),
+        started: game[:started],
+        winner: get_winner(game),
+        scores: updated_scores,
+      }
+    else
+      %{
+        results: results,
+        guesses: game[:guesses],
+        won: false,
+        users: updated_users,
+        observers: MapSet.to_list(game[:observers]),
+        started: game[:started],
+        winner: "",
+        scores: game[:scores],
+      }
+    end
+    
+  end
+
+  # Updates the winner's score to be +1
+  def update_winners_score(scores, winner) do
+    Enum.map(scores, 
+      fn (score) ->
+        if (List.first(score) == winner) do
+          [List.first(score), List.last(score) + 1]
+        else
+          score
+        end
+      end
+    )
   end
 
   # Computes the resulting cows and bulls for a single guess
@@ -283,6 +328,18 @@ defmodule Bulls.GameLogic do
       users: updated_users,
       observers: updated_observers,
       scores: game[:scores],
+    }
+  end
+
+  # Resets everything but the score
+  def reset(game) do
+    %{
+        secret: compute_random_secret(),
+        guesses: [],
+        started: false,
+        users: [],
+        observers: MapSet.new(),
+        scores: game[:scores],
     }
   end
 

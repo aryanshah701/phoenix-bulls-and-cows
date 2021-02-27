@@ -137,9 +137,13 @@ defmodule BullsWeb.GameChannel do
     # Update view game for reply
     view_game = GameLogic.get_view_version(game)
 
+    # Update scores if game was won
+    GameServer.update_scores(game_name, view_game[:scores])
+
     # Broadcast state update to all players connected to this channel
-    IO.puts(socket.topic)
     broadcast_from(socket, "view", view_game)
+
+    IO.inspect view_game
 
     {:reply, {:ok, view_game}, socket}
   end

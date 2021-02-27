@@ -66,6 +66,7 @@ function App() {
     players: [],
     observers: [],
     winner: "",
+    scores: [],
   });
 
   const gameStarted = state.gameStarted;
@@ -133,6 +134,8 @@ function App() {
 
   //LobbyGameScreen if game has been joined but not yet started
   if (state.gameJoined && !state.gameStarted) {
+    console.log("Scores");
+    console.log(state.scores);
     return (
       <Lobby
         gameName={state.gameName}
@@ -143,6 +146,7 @@ function App() {
         makePlayer={channelAddPlayer}
         makeObserver={channelAddObserver}
         updateStatus={channelUpdatePlayerStatus}
+        scores={state.scores}
       />
     );
   }
@@ -154,7 +158,12 @@ function App() {
 
     return (
       <div>
-        <GameOver reset={reset} won={won} winner={state.winner} />
+        <GameOver
+          reset={reset}
+          won={won}
+          winner={state.winner}
+          scores={state.scores}
+        />
       </div>
     );
   }

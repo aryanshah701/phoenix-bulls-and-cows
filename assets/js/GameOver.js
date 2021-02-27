@@ -18,7 +18,7 @@ function GameOver(props) {
       <h1>Bulls and Cows</h1>
       <h4>{message}</h4>
       <button id="new-game" onClick={() => reset()}>
-        New Game
+        Lobby
       </button>
     </div>
   );

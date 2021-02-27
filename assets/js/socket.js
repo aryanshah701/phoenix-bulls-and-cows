@@ -21,6 +21,7 @@ let gameState = {
   players: [],
   observers: [],
   winner: "",
+  scores: [],
 };
 
 let callback = null;
@@ -39,6 +40,7 @@ function updateGame(newGame) {
   console.log("New game results: " + newGame.results);
   console.log("New game guesses: " + newGame.guesses);
   console.log("Won:" + newGame.won);
+  console.log("Score: " + newGame.scores);
   console.log("---------------");
 
   // If the user exist in this game
@@ -52,9 +54,9 @@ function updateGame(newGame) {
       observers: newGame.observers,
       gameStarted: newGame.started,
       winner: newGame.winner,
+      scores: newGame.scores,
     };
 
-    console.log("Channel username: " + gameState.userName);
     if (callback) {
       callback(gameState);
     }
@@ -79,7 +81,6 @@ export function channelJoin(setState, gameName) {
 
   // Listen view view update broadcasts(Taken from Nat Tuck notes, 0219 socket.js)
   channel.on("view", (view_game) => {
-    console.log("Broadcast received");
     updateGame(view_game);
   });
 
@@ -164,6 +165,7 @@ export function channelLeaveGame() {
     });
 
   gameState = {
+    ...gameState,
     results: [],
     guesses: [],
     won: false,

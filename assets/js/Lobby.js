@@ -14,6 +14,7 @@ function Lobby(props) {
     makePlayer,
     makeObserver,
     updateStatus,
+    scores,
   } = props;
 
   function statusString(status) {
@@ -33,9 +34,27 @@ function Lobby(props) {
   // Converts the list of players to a string
   function playersToString(players) {
     if (players) {
-      console.log(players);
       return players
         .map((player) => playerToString(player))
+        .join(", ")
+        .replace(/,\s*$/, "");
+    } else {
+      return "";
+    }
+  }
+
+  // Converts a score to a string
+  function scoreToString(score) {
+    if (score[0]) {
+      return score[0] + ": " + score[1];
+    }
+  }
+
+  // Converts the scores of all players to a string
+  function scoresToString(scores) {
+    if (scores) {
+      return scores
+        .map((score) => scoreToString(score))
         .join(", ")
         .replace(/,\s*$/, "");
     } else {
@@ -87,11 +106,18 @@ function Lobby(props) {
           </div>
           <div className="column">
             <div className="row">
-              <p>Players: {playersToString(players)}</p>
+              <div className="column">
+                <p>Players: {playersToString(players)}</p>
+              </div>
+              <div className="column">
+                <p> Observers: {observers.toString()}</p>
+              </div>
             </div>
-          </div>
-          <div className="column">
-            <p> Observers: {observers.toString()}</p>
+            <div className="row">
+              <div className="column">
+                <p> Scores: {scoresToString(scores)}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

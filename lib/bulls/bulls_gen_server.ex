@@ -61,6 +61,11 @@ defmodule Bulls.GameServer do
     GenServer.call(reg(game_name), {:guess, game_name, user, guess})
   end
 
+  # Function to update score if the game was won
+  def update_scores(game_name, scores) do
+    GenServer.call(reg(game_name), {:update_scores, game_name, scores})
+  end
+
   # Function to remove a user from the game
   def remove_user(game_name, user) do
     GenServer.call(reg(game_name), {:remove, game_name, user})
@@ -98,9 +103,21 @@ defmodule Bulls.GameServer do
   end
 
   @impl true
-  def handle_call({:reset, game_name}, _from, _game) do
+  def handle_call({:update_scores, game_name, scores}, _from, game) do
+    # Make a guess
+    game = GameLogic.update_scores(game, scores)
+
+    # Update backup agent
+    BackupAgent.update_backup(game_name, game)
+
+    # Respond with new game
+    {:reply, game, game}
+  end
+
+  @impl true
+  def handle_call({:reset, game_name}, _from, game) do
     # Reset the game
-    game = GameLogic.create_new_game()
+    game = GameLogic.reset(game)
 
     # Update backup agent
     BackupAgent.update_backup(game_name, game)
