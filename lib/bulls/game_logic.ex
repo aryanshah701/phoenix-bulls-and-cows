@@ -15,6 +15,7 @@ defmodule Bulls.GameLogic do
       started: false,
       users: [],
       observers: MapSet.new(),
+      scores: [],
     }
   end
 
@@ -46,6 +47,7 @@ defmodule Bulls.GameLogic do
         started: false,
         users: updated_users,
         observers: updated_observers,
+        scores: game[:scores],
       }
 
     else
@@ -65,7 +67,7 @@ defmodule Bulls.GameLogic do
     user_exists(game[:users], username)
   end
 
-  # Update a given user's status
+  # Update a given user's status, checks if game can be started
   def update_status(game, username, status) do
     # Update user's ready value to status
     updated_users = Enum.map(game[:users], 
@@ -78,14 +80,49 @@ defmodule Bulls.GameLogic do
       end)
 
     # Check if the game can be started with updated user status
-    %{
-      secret: game[:secret],
-      guesses: game[:guesses],
-      started: is_game_ready(updated_users),
-      users: updated_users,
-      observers: game[:observers],
-    }
+    # If game can be started, starts the game, and updates scores
+    if is_game_ready(updated_users) do 
+      %{
+        secret: game[:secret],
+        guesses: game[:guesses],
+        started: true,
+        users: updated_users,
+        observers: game[:observers],
+        scores: updated_scores,
+      }
+    else
+      %{
+        secret: game[:secret],
+        guesses: game[:guesses],
+        started: false,
+        users: updated_users,
+        observers: game[:observers],
+        scores: game[:scores],
+      }
+    end
+
   end
+
+  # Get updated scores with new players who may have begun playing
+  def get_updated_scores(game) do
+    # Get the users that are playing the game and don't have scores
+    # And add all these users with a score of 0 to the current score list
+    new_scores = game[:users]
+      |> Enum.filter(fn (user) -> List.last(user) end)
+      |> Enum.filter(fn (user) -> !score_member?(game[:scores], List.first(user)) end)
+      |> Enum.map(fn (user) -> [List.first(user), 0] end)
+
+    # Join the above list with the current scores
+    IO.puts "SCORES"
+    IO.inspect game[:scores]    
+    game[:scores] ++ new_scores
+  end
+
+  # Check if the given user is already has a score
+  def score_member?(scores, user) do
+    Enum.filter(scores, fn (score) -> List.first(score) == user end) != []
+  end
+
 
   # Add observer onto the observer list
   def add_observer(game, observer) do
@@ -102,6 +139,7 @@ defmodule Bulls.GameLogic do
       started: game[:started],
       users: updated_users,
       observers: updated_observers,
+      scores: game[:scores]
     }
   end
 
@@ -120,6 +158,7 @@ defmodule Bulls.GameLogic do
         started: game[:started],
         users: game[:users],
         observers: game[:observers],
+        scores: game[:scores]
       }
     else
       game
@@ -243,6 +282,7 @@ defmodule Bulls.GameLogic do
       started: game[:started],
       users: updated_users,
       observers: updated_observers,
+      scores: game[:scores],
     }
   end
 
