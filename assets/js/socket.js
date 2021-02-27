@@ -13,13 +13,14 @@ let channel = null;
 let gameState = {
   results: [],
   guesses: [],
-  won: false,
+  won: "",
   gameStarted: false,
   gameJoined: true,
   gameName: "",
   userName: "",
   players: [],
   observers: [],
+  winner: "",
 };
 
 let callback = null;
@@ -50,6 +51,7 @@ function updateGame(newGame) {
       players: newGame.users,
       observers: newGame.observers,
       gameStarted: newGame.started,
+      winner: newGame.winner,
     };
 
     console.log("Channel username: " + gameState.userName);
@@ -171,6 +173,7 @@ export function channelLeaveGame() {
     userName: "",
     players: [],
     observers: [],
+    winner: "",
   };
 
   if (callback) {

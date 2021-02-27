@@ -4,14 +4,13 @@ import "milligram";
 import "../css/app.scss";
 
 function GameOver(props) {
-  let { reset } = props;
-  let { won } = props;
+  const { reset, won, winner } = props;
   let message = "";
 
   if (won) {
     message = "You Won!";
   } else {
-    message = "Sorry, you lost!";
+    message = "Sorry, you lost! The winner was " + winner;
   }
 
   return (

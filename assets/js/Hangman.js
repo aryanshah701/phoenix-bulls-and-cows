@@ -65,6 +65,7 @@ function App() {
     userName: "",
     players: [],
     observers: [],
+    winner: "",
   });
 
   const gameStarted = state.gameStarted;
@@ -148,18 +149,12 @@ function App() {
 
   //Game Won
   if (state.won) {
-    return (
-      <div>
-        <GameOver reset={reset} won={true} />
-      </div>
-    );
-  }
+    //Last guess user is the winner
+    const won = state.winner == state.userName;
 
-  //Game Over
-  if (state.guesses.length > 7) {
     return (
       <div>
-        <GameOver reset={reset} won={false} />
+        <GameOver reset={reset} won={won} winner={state.winner} />
       </div>
     );
   }

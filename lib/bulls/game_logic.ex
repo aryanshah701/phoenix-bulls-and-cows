@@ -144,6 +144,7 @@ defmodule Bulls.GameLogic do
       users: updated_users,
       observers: MapSet.to_list(game[:observers]),
       started: game[:started],
+      winner: get_winner(game),
     }
   end
 
@@ -210,6 +211,17 @@ defmodule Bulls.GameLogic do
         |> List.last
       IO.puts(last_guess)
       secret == last_guess
+    end
+  end
+
+  # Get winner if there is a winner
+  def get_winner(game) do
+    if has_won(game) do
+      game[:guesses]
+        |> List.first
+        |> List.first
+    else
+      ""
     end
   end
 
