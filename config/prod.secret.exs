@@ -18,6 +18,8 @@ config :bulls, BullsWeb.Endpoint,
     transport_options: [socket_opts: [:inet6]]
   ],
   url: [scheme: "https", host: System.get_env("WEB_HOST"), port: 80],
+  check_origin: ["https://bulls.aryanshah.tech"],
+  force_ssl: [rewrite_on: [:x_forwarded_proto]]
   secret_key_base: secret_key_base
 
 # ## Using releases (Elixir v1.9+)
