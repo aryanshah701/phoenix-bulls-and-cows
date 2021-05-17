@@ -85,7 +85,7 @@ function EnterGameScreen(props) {
               }
             }}
           ></input>
-          <button onClick={updateUserText}>Join Game</button>
+          <button onClick={joinGame}>Join Game</button>
         </div>
       </div>
     </div>
